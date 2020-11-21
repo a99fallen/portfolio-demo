@@ -7,7 +7,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder @EqualsAndHashCode(of = "username") @ToString
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@EqualsAndHashCode(of = "username")
+@ToString(exclude = "password")
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,9 +22,14 @@ public class User {
     private Boolean active = Boolean.FALSE;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"),indexes =
-        @Index(name = "users_roles_username_idx", columnList = "user_name"))
+    @CollectionTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "username",
+                    referencedColumnName = "username"),
+            indexes = @Index(
+                    name = "users_roles_username_idx",
+                    columnList = "username"))
     @Column(name = "role")
     private Set<String> roles;
 }

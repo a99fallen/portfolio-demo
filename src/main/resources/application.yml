@@ -7,5 +7,6 @@ spring:
       ddl-auto: create-drop
 logging:
   level:
-    - projects.portfoliodemo: debug
-    - sql: debug
+    root: INFO
+    sql: DEBUG
+    projects.portfoliodemo: DEBUG
