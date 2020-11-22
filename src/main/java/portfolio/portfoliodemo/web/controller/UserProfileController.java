@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import portfolio.portfoliodemo.data.user.UserSummary;
+import portfolio.portfoliodemo.exception.UserAlreadyExistsException;
 import portfolio.portfoliodemo.service.UserService;
 import portfolio.portfoliodemo.web.command.EditUserCommand;
 
@@ -41,6 +42,17 @@ public class UserProfileController {
     @PostMapping("/edit")
     public String editUserProfile(@Valid EditUserCommand editUserCommand, BindingResult bindingResult) {
         //TODO Do implementacji
-        return "rediret:/profile";
+        log.debug("Dane do edycji użytkownika: {}", editUserCommand);
+        if (bindingResult.hasErrors()) {
+            log.debug("Błędne dane: {}", bindingResult.getAllErrors());
+            return "user/profile";
+        }
+        try {
+            Long id = userService.edit(editUserCommand);
+            log.debug("Edytowano użytkownika o id = {}", id);
+            return "redirect:/profile";
+        } catch (RuntimeException re) {
+            bindingResult.rejectValue(null, null, "Wystąpił błąd");
+        return "rediret:profile";
     }
 }

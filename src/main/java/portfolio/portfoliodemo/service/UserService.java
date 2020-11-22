@@ -12,6 +12,7 @@ import portfolio.portfoliodemo.domain.model.User;
 import portfolio.portfoliodemo.domain.model.UserDetails;
 import portfolio.portfoliodemo.domain.repository.UserRepository;
 import portfolio.portfoliodemo.exception.UserAlreadyExistsException;
+import portfolio.portfoliodemo.web.command.EditUserCommand;
 import portfolio.portfoliodemo.web.command.RegisterUserCommand;
 
 import javax.transaction.Transactional;
@@ -57,5 +58,9 @@ public class UserService {
         log.debug("Podsumowanie danych użytkownika: {}", summary);
 
         return summary;
+    }
+
+    public Long edit(EditUserCommand editUserCommand) {
+        return null;
     }
 }
