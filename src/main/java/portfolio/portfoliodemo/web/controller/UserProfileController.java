@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import portfolio.portfoliodemo.data.user.UserSummary;
@@ -17,17 +18,21 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/profile")
-@Slf4j @RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class UserProfileController {
 
     private final UserService userService;
 
+    @ModelAttribute("userSummary")
+    public UserSummary userSummary() {
+        return userService.getCurrentUserSummary();
+    }
+
     @GetMapping
-    public String getProfilePage (Model model) {
-        UserSummary summary = userService.getCurrentUserSummary();
-        EditUserCommand editUserCommand = createEditUserCommand(summary);
-        model.addAttribute("userSummary", new UserSummary());
-        model.addAttribute("editUserCommand", editUserCommand);
+    public String getProfilePage(Model model) {
+        EditUserCommand editUserCommand = createEditUserCommand(userSummary());
+        model.addAttribute(editUserCommand);
         return "user/profile";
     }
 
@@ -40,19 +45,22 @@ public class UserProfileController {
     }
 
     @PostMapping("/edit")
-    public String editUserProfile(@Valid EditUserCommand editUserCommand, BindingResult bindingResult) {
-        //TODO Do implementacji
+    public String editUserProfile(@Valid EditUserCommand editUserCommand, BindingResult bindings) {
         log.debug("Dane do edycji użytkownika: {}", editUserCommand);
-        if (bindingResult.hasErrors()) {
-            log.debug("Błędne dane: {}", bindingResult.getAllErrors());
+        if (bindings.hasErrors()) {
+            log.debug("Błędne dane: {}", bindings.getAllErrors());
             return "user/profile";
         }
+
         try {
-            Long id = userService.edit(editUserCommand);
-            log.debug("Edytowano użytkownika o id = {}", id);
+            boolean success = userService.edit(editUserCommand);
+            log.debug("Udana edycja danych? {}", success);
             return "redirect:/profile";
         } catch (RuntimeException re) {
-            bindingResult.rejectValue(null, null, "Wystąpił błąd");
-        return "rediret:profile";
+            log.warn(re.getLocalizedMessage());
+            log.debug("Błąd przy edycji danych", re);
+            bindings.rejectValue(null, null, "Wystąpił błąd");
+        }
+        return "redirect:/profile";
     }
 }

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.transaction.annotation.Transactional;
 import portfolio.portfoliodemo.converter.UserConverter;
 import portfolio.portfoliodemo.data.user.UserSummary;
 import portfolio.portfoliodemo.domain.model.User;
@@ -15,7 +15,6 @@ import portfolio.portfoliodemo.exception.UserAlreadyExistsException;
 import portfolio.portfoliodemo.web.command.EditUserCommand;
 import portfolio.portfoliodemo.web.command.RegisterUserCommand;
 
-import javax.transaction.Transactional;
 import java.util.Set;
 
 @Service @Transactional
@@ -36,19 +35,38 @@ public class UserService {
             throw new UserAlreadyExistsException(String.format("Użytkownik %s już istnieje", userToCreate.getUsername()));
         }
 
-        userToCreate.setActive(Boolean.TRUE);
-        userToCreate.setRoles(Set.of("ROLE_USER"));
-        userToCreate.setPassword(passwordEncoder.encode(userToCreate.getPassword()));
-        userToCreate.setDetails(UserDetails.builder()
-                .user(userToCreate)
-                .build());
+        setEncodedPassword(userToCreate);
+        setDefaultData(userToCreate);
         userRepository.save(userToCreate);
         log.debug("Zapisany użytkownik: {}", userToCreate);
 
         return userToCreate.getId();
     }
 
-    @Transactional
+    private void setDefaultData(User userToCreate) {
+        setDefaultActive(userToCreate);
+        setDefaultRole(userToCreate);
+        setDefaultDetails(userToCreate);
+    }
+
+    private void setDefaultDetails(User userToCreate) {
+        userToCreate.setDetails(UserDetails.builder()
+                .user(userToCreate)
+                .build());
+    }
+
+    private void setEncodedPassword(User userToCreate) {
+        userToCreate.setPassword(passwordEncoder.encode(userToCreate.getPassword()));
+    }
+
+    private void setDefaultRole(User userToCreate) {
+        userToCreate.setRoles(Set.of("ROLE_USER"));
+    }
+
+    private void setDefaultActive(User userToCreate) {
+        userToCreate.setActive(Boolean.TRUE);
+    }
+
     public UserSummary getCurrentUserSummary() {
         log.debug("Pobieranie danych użytkownika aktualnie zalogowanego");
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -60,7 +78,15 @@ public class UserService {
         return summary;
     }
 
-    public Long edit(EditUserCommand editUserCommand) {
-        return null;
+    public boolean edit(EditUserCommand editUserCommand) {
+        log.debug("Dane do edycji użytkownika: {}", editUserCommand);
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.getAuthenticatedUser(username);
+        log.debug("Edycja użytkownika: {}", user);
+
+        user = userConverter.from(editUserCommand, user);
+        log.debug("Zmodyfikowane dane użytkownika: {}", user.getDetails());
+        return true;
     }
 }
