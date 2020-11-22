@@ -6,14 +6,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import portfolio.portfoliodemo.data.user.UserSummary;
+import portfolio.portfoliodemo.service.UserService;
 
 @Controller
 @RequestMapping("/profile")
 @Slf4j @RequiredArgsConstructor
 public class UserProfileController {
 
+    private final UserService userService;
+
     @GetMapping
     public String getProfilePage (Model model) {
+        UserSummary summary = userService.getCurrentUserSummary();
+        model.addAttribute("userSummary", new UserSummary());
         return "user/profile";
     }
 }

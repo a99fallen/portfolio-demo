@@ -2,11 +2,14 @@ package portfolio.portfoliodemo.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 import portfolio.portfoliodemo.converter.UserConverter;
+import portfolio.portfoliodemo.data.user.UserSummary;
 import portfolio.portfoliodemo.domain.model.User;
+import portfolio.portfoliodemo.domain.model.UserDetails;
 import portfolio.portfoliodemo.domain.repository.UserRepository;
 import portfolio.portfoliodemo.exception.UserAlreadyExistsException;
 import portfolio.portfoliodemo.web.command.RegisterUserCommand;
@@ -35,9 +38,24 @@ public class UserService {
         userToCreate.setActive(Boolean.TRUE);
         userToCreate.setRoles(Set.of("ROLE_USER"));
         userToCreate.setPassword(passwordEncoder.encode(userToCreate.getPassword()));
+        userToCreate.setDetails(UserDetails.builder()
+                .user(userToCreate)
+                .build());
         userRepository.save(userToCreate);
         log.debug("Zapisany użytkownik: {}", userToCreate);
 
         return userToCreate.getId();
+    }
+
+    @Transactional
+    public UserSummary getCurrentUserSummary() {
+        log.debug("Pobieranie danych użytkownika aktualnie zalogowanego");
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.getAuthenticatedUser(username);
+        UserSummary summary = userConverter.toUserSummary(user);
+        log.debug("Podsumowanie danych użytkownika: {}", summary);
+
+        return summary;
     }
 }

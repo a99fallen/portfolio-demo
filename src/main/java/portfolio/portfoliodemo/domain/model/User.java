@@ -36,5 +36,5 @@ public class User implements Serializable {
     private Set<String> roles = new HashSet<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserDetails userDetails;
+    private UserDetails details;
 }
