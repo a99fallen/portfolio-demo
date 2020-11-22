@@ -31,8 +31,10 @@ public class UserProfileController {
 
     @GetMapping
     public String getProfilePage(Model model) {
-        EditUserCommand editUserCommand = createEditUserCommand(userSummary());
-        model.addAttribute(editUserCommand);
+        UserSummary summary = userService.getCurrentUserSummary();
+        EditUserCommand editUserCommand = createEditUserCommand(summary);
+        model.addAttribute("userSummary", new UserSummary());
+        model.addAttribute("editUserCommand", editUserCommand);
         return "user/profile";
     }
 
@@ -45,22 +47,21 @@ public class UserProfileController {
     }
 
     @PostMapping("/edit")
-    public String editUserProfile(@Valid EditUserCommand editUserCommand, BindingResult bindings) {
+    public String editUserProfile(@Valid EditUserCommand editUserCommand, BindingResult bindingResult) {
         log.debug("Dane do edycji użytkownika: {}", editUserCommand);
-        if (bindings.hasErrors()) {
-            log.debug("Błędne dane: {}", bindings.getAllErrors());
+        if (bindingResult.hasErrors()) {
+            log.debug("Błędne dane: {}", bindingResult.getAllErrors());
             return "user/profile";
         }
-
         try {
             boolean success = userService.edit(editUserCommand);
-            log.debug("Udana edycja danych? {}", success);
+            log.debug("Edytowano użytkownika o id = {}", success);
             return "redirect:/profile";
         } catch (RuntimeException re) {
             log.warn(re.getLocalizedMessage());
             log.debug("Błąd przy edycji danych", re);
-            bindings.rejectValue(null, null, "Wystąpił błąd");
+            bindingResult.rejectValue(null, null, "Wystąpił błąd");
+            return "rediret:/profile";
         }
-        return "redirect:/profile";
     }
 }

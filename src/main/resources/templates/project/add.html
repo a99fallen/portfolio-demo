@@ -11,10 +11,10 @@
         <fieldset>
             <div>
                 <label>Nazwa:
-                    <input type="text" th:field="*{name}" name="name" required/>
+                    <input type="text" th:field="*{projectName}" name="name" required/>
                 </label>
-                <div th:if="${#fields.hasErrors('name')}">
-                    <span th:each="err : ${#fields.errors('name')}" th:text="${err}"></span>
+                <div th:if="${#fields.hasErrors('projectName')}">
+                    <span th:each="err : ${#fields.errors('projectName')}" th:text="${err}"></span>
                 </div>
             </div>
             <div>
@@ -27,10 +27,10 @@
             </div>
             <div>
                 <label>Opis:
-                    <textarea th:field="*{description}"></textarea>
+                    <textarea th:field="*{projectDescription}"></textarea>
                 </label>
-                <div th:if="${#fields.hasErrors('description')}">
-                    <span th:each="err : ${#fields.errors('description')}" th:text="${err}"></span>
+                <div th:if="${#fields.hasErrors('projectDescription')}">
+                    <span th:each="err : ${#fields.errors('projectDescription')}" th:text="${err}"></span>
                 </div>
             </div>
         </fieldset>

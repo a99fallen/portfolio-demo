@@ -26,6 +26,6 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @Column(name = "user_id")
+    @Column(insertable = false, updatable = false, name = "user_id")
     private Long userId;
 }
